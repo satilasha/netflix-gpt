@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',   // 👈 tells Next to generate /out folder
+  output: 'standalone',   // 👈 generates .next/standalone with routes-manifest.json
 };
 
 export default nextConfig;
