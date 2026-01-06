@@ -13,3 +13,11 @@
 - Netflix gpt
     - Search bar
     - Movie Suggestions
+
+
+react
+redux
+tailwind css
+firebase
+next
+openai api

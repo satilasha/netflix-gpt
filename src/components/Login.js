@@ -2,8 +2,18 @@
 
 import React from 'react'
 import { validateSignIn } from '@/utils/validate';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from '../utils/firebase';
+import { useDispatch } from 'react-redux';
+import { useRouter } from "next/navigation";
+import { addUser } from '../utils/userSlice';
+import { updateProfile } from "firebase/auth";
+
 
 const Login = () => {
+
+    const dispatch = useDispatch();
+    const router = useRouter();
 
     const [signIn, setSignIn] = React.useState(true);
     const [errorMessage, setErrorMessage] = React.useState("");
@@ -16,9 +26,60 @@ const Login = () => {
 
         const validation = validateSignIn(email.current.value, password.current.value, name.current ? name.current.value : "not_required");
 
-        if(!validation.valid){
+        if (!validation.valid) {
             setErrorMessage(validation.message);
             return;
+        }
+
+        if (validation.message) return;
+
+        //Sign In / Sign Up Logic Here
+
+        if (!signIn) {
+            createUserWithEmailAndPassword(auth, email.current.value, password.current.value)
+                .then((userCredential) => {
+
+                    updateProfile(auth.currentUser, {
+                        displayName: name.current.value
+                    }).then(() => {
+                        dispatch(addUser({
+                            uid,
+                            email,
+                            name: auth.currentUser.displayName,
+                        }));
+                    }).catch((error) => {
+                        setErrorMessage(error.message);
+                    });
+                    // Signed up 
+                    const user = userCredential.user;
+                    console.log("User Signed Up: ", user);
+
+                    const { uid, email } = user;
+
+                    router.push("/browse");
+
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    setErrorMessage(errorCode + "_" + errorMessage);
+                });
+
+        } else {
+            signInWithEmailAndPassword(auth, email.current.value, password.current.value)
+                .then((userCredential) => {
+                    // Signed in 
+                    const user = userCredential.user;
+                    console.log("User Signed In: ", user)
+
+                    router.push("/browse");
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    setErrorMessage(errorCode + "_" + errorMessage);
+                });
+
         }
     }
 
@@ -62,7 +123,7 @@ const Login = () => {
 
                 <p className='text-red-500'>{errorMessage}</p>
 
-                <button className="px-4 py-2 bg-red-600 rounded-md"
+                <button className="px-4 py-2 bg-red-600 rounded-md text-white hover:bg-red-700 active:scale-95 transition-transform duration-150"
                     onClick={handleOnSubmit}>{"Sign " + (signIn ? "In" : "Up")}</button>
                 <p className='text-left text-gray-500'>{signIn ? "New to Netflix?" : "Already Registered On Netflix,"}
                     <span

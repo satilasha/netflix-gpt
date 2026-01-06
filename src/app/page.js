@@ -1,10 +1,15 @@
+"use client";
+
 import Body from "@/components/Body";
-import Image from "next/image";
+import { Provider } from "react-redux";
+import appStore from "../utils/appStore";
 
 export default function Home() {
   return (
     <div>
-      <Body />
+      <Provider store={appStore}>
+        <Body />
+      </Provider>
     </div>
   );
 }
